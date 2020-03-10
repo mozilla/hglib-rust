@@ -26,7 +26,7 @@ impl TestClient {
     pub fn new(name: &str, configs: &[&str]) -> Self {
         env::set_var("HGUSER", "test");
 
-        let tmp = env::temp_dir();
+        let tmp = env::temp_dir().canonicalize().unwrap();
         let path = tmp.join(name);
         if path.exists() {
             let _ = fs::remove_dir_all(&path);

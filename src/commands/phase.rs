@@ -43,7 +43,7 @@ impl<'a> Arg<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Phase {
     pub num: u64,
     pub phase: String,

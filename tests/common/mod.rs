@@ -25,6 +25,7 @@ impl Drop for TestClient {
 impl TestClient {
     pub fn new(name: &str, configs: &[&str]) -> Self {
         env::set_var("HGUSER", "test");
+        env::set_var("HGRCPATH", "");
 
         let tmp = env::temp_dir().canonicalize().unwrap();
         let path = tmp.join(name);

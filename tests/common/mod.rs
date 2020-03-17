@@ -55,7 +55,7 @@ impl TestClient {
             .create(true)
             .open(self.path.join(path))
             .unwrap();
-        let mut writer = BufWriter::new(file);
+        let mut writer = BufWriter::new(&file);
         let _ = write!(&mut writer, "{}", lines.join("\n"));
     }
 

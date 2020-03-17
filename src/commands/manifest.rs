@@ -35,7 +35,7 @@ impl<'a> Arg<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct File {
     pub node: String,
     pub perm: String,
@@ -44,7 +44,7 @@ pub struct File {
     pub filename: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Manifest {
     All(Vec<String>),
     Info(Vec<File>),
@@ -56,12 +56,15 @@ impl Client {
         if x.all {
             Ok(Manifest::All(
                 data.split(|c| *c == b'\n')
+                    .filter(|l| !l.is_empty())
                     .map(|s| String::from_utf8(s.to_vec()).unwrap())
                     .collect(),
             ))
         } else {
             let mut res = Vec::new();
-            for line in data.split(|c| *c == b'\n') {
+            for line in data
+                .split(|c| *c == b'\n')
+                .filter(|l| !l.is_empty()) {
                 if line.len() >= 48 {
                     res.push(File {
                         node: String::from_utf8(unsafe { line.get_unchecked(..40).to_vec() })?,

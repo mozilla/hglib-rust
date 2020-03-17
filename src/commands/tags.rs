@@ -3,7 +3,7 @@
 // You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use crate::client::{Client, HglibError, Runner};
-use crate::{runcommand, MkArg};
+use crate::{debug_vec, runcommand, MkArg};
 
 pub struct Arg {}
 
@@ -19,7 +19,7 @@ impl Arg {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Tag {
     pub name: String,
     pub rev: u64,
@@ -31,6 +31,7 @@ impl Client {
     pub fn tags(&mut self, x: Arg) -> Result<Vec<Tag>, HglibError> {
         let (data, _) = x.run(self)?;
         let mut tags = Vec::new();
+        debug_vec!(data);
         for line in data.split(|x| *x == b'\n').filter(|x| !x.is_empty()) {
             let islocal = line.ends_with(b" local");
             let line = if islocal {
@@ -38,9 +39,13 @@ impl Client {
             } else {
                 line
             };
-            let mut iter = line.split(|x| *x == b' ').filter(|x| !x.is_empty());
-            let name = String::from_utf8(iter.next().unwrap().to_vec())?;
+
+            let mut iter = line.rsplitn(2, |x| *x == b' ');
             let rev_node = iter.next().unwrap();
+            let name = std::str::from_utf8(iter.next().unwrap())?
+                .trim_end()
+                .to_string();
+
             let iter = &mut rev_node.iter();
             let rev = iter
                 .take_while(|x| **x != b':')

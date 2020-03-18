@@ -4,7 +4,7 @@
 
 use std::env;
 use std::fs::{self, File, OpenOptions};
-use std::io::{BufWriter, Write};
+use std::io::{BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::{thread, time};
 
@@ -18,7 +18,7 @@ pub struct TestClient {
 impl Drop for TestClient {
     fn drop(&mut self) {
         self.client.close().unwrap();
-        assert!(fs::remove_dir_all(&self.path).is_ok());
+        //assert!(fs::remove_dir_all(&self.path).is_ok());
     }
 }
 
@@ -57,6 +57,39 @@ impl TestClient {
             .unwrap();
         let mut writer = BufWriter::new(&file);
         let _ = write!(&mut writer, "{}", lines.join("\n"));
+    }
+
+    #[allow(dead_code)]
+    pub fn prepend(&self, path: &str, lines: &[&str]) {
+        let mut file = OpenOptions::new()
+            .read(true)
+            .open(self.path.join(path))
+            .unwrap();
+
+        let s = lines.join("\n");
+        let mut contents = String::from(s);
+        file.read_to_string(&mut contents).unwrap();
+
+        let file = OpenOptions::new()
+            .truncate(true)
+            .write(true)
+            .open(self.path.join(path))
+            .unwrap();
+        let mut writer = BufWriter::new(&file);
+        let _ = write!(&mut writer, "{}", contents);
+    }
+
+    #[allow(dead_code)]
+    pub fn read(&self, path: &str) -> String {
+        let mut file = OpenOptions::new()
+            .read(true)
+            .open(self.path.join(path))
+            .unwrap();
+
+        let mut contents = String::new();
+        file.read_to_string(&mut contents).unwrap();
+
+        contents
     }
 
     #[allow(dead_code)]

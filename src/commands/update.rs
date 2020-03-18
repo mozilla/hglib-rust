@@ -41,7 +41,7 @@ impl<'a> Arg<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Update {
     pub updated: u32,
     pub merged: u32,
@@ -63,9 +63,12 @@ impl Client {
         };
 
         let iter = &mut data.iter();
+        let n = iter.skip_while(|x| **x < b'0' || **x > b'9').next().unwrap();
+        let n = u32::from(n - b'0');
+
         let updated = iter
             .take_while(|x| **x != b' ')
-            .fold(0, |r, x| r * 10 + u32::from(*x - b'0'));
+            .fold(n, |r, x| r * 10 + u32::from(*x - b'0'));
         iter.skip_while(|x| **x != b',').next();
         iter.next();
 

@@ -3,7 +3,7 @@
 // You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use crate::client::{Client, HglibError, Runner};
-use crate::{debug_vec, runcommand, MkArg};
+use crate::{runcommand, MkArg};
 
 pub struct Arg {}
 
@@ -31,7 +31,6 @@ impl Client {
     pub fn tags(&mut self, x: Arg) -> Result<Vec<Tag>, HglibError> {
         let (data, _) = x.run(self)?;
         let mut tags = Vec::new();
-        debug_vec!(data);
         for line in data.split(|x| *x == b'\n').filter(|x| !x.is_empty()) {
             let islocal = line.ends_with(b" local");
             let line = if islocal {

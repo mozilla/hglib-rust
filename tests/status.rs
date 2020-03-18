@@ -8,7 +8,6 @@ use crate::hglib::{
     add, commit, copy, hg, remove, status,
     status::{Code, Status},
 };
-use std::fs;
 
 mod common;
 
@@ -34,7 +33,7 @@ fn test_one_of_each() {
     c.append("added", &["a"]);
     assert!(hg!(c.client, add, files = &["added"]).is_ok());
 
-    assert!(fs::remove_file(c.get_path("missing")).is_ok());
+    c.rm("missing");
     assert!(hg!(c.client, remove, files = &["removed"]).is_ok());
     c.append("untracked", &[]);
 

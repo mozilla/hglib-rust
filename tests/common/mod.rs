@@ -81,6 +81,17 @@ impl TestClient {
     }
 
     #[allow(dead_code)]
+    pub fn write(&self, path: &str, content: &str) {
+        let file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .open(self.path.join(path))
+            .unwrap();
+        let mut writer = BufWriter::new(&file);
+        let _ = write!(&mut writer, "{}", content);
+    }
+
+    #[allow(dead_code)]
     pub fn read(&self, path: &str) -> String {
         let mut file = OpenOptions::new()
             .read(true)
@@ -91,6 +102,11 @@ impl TestClient {
         file.read_to_string(&mut contents).unwrap();
 
         contents
+    }
+
+    #[allow(dead_code)]
+    pub fn rm(&self, path: &str) {
+        fs::remove_file(self.path.join(path)).unwrap();
     }
 
     #[allow(dead_code)]

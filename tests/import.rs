@@ -5,8 +5,6 @@
 extern crate hglib;
 
 use crate::hglib::{cat, hg, import, update};
-use std::fs;
-use std::io::prelude::*;
 
 mod common;
 
@@ -37,15 +35,13 @@ diff -r 000000000000 -r c103a3dec114 a
 #[test]
 fn test_basic_file() {
     let mut c = common::TestClient::new("import_basic_file", &[]);
-
-    let mut file = fs::File::create("patch").unwrap();
-    file.write_all(PATCH.as_bytes()).unwrap();
-
+    c.write("patch", PATCH);
+    
     assert!(hg!(c.client, import, patches = &["patch"], nocommit = true).is_ok());
-    assert_eq!(fs::read_to_string("a").unwrap(), "1\n");
+    assert_eq!(c.read("a"), "1\n");
 
     assert!(hg!(c.client, update, clean = true).is_ok());
-    assert!(fs::remove_file("a").is_ok());
+    c.rm("a");
 
     assert!(hg!(c.client, import, patches = &["patch"]).is_ok());
     let a = hg!(c.client, cat, files = &["a"]).unwrap().unwrap();

@@ -18,7 +18,7 @@ pub struct TestClient {
 impl Drop for TestClient {
     fn drop(&mut self) {
         self.client.close().unwrap();
-        //assert!(fs::remove_dir_all(&self.path).is_ok());
+        assert!(fs::remove_dir_all(&self.path).is_ok());
     }
 }
 

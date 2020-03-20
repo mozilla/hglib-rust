@@ -55,13 +55,13 @@ impl<'a> Arg<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Kind {
     Resolved,
     Unresolved,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Resolve {
     pub kind: Kind,
     pub filename: String,

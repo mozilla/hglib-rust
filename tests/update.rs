@@ -167,7 +167,7 @@ fn test_disabled_largefiles() {
 
     c.append("b", &["a"]);
 
-    c.client.runcommand(&["add", "b", "--large"]).unwrap();
+    c.client.runcommand(&["add", "b", "--large"], None).unwrap();
 
     let c2 = hg![c.client, commit, message = "third"].unwrap();
 

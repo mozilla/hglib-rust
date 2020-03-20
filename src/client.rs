@@ -15,7 +15,11 @@ use subprocess::{Popen, PopenConfig, Redirection};
 
 pub trait Runner {
     /// Run a command
-    fn runcommand(&mut self, args: &[&str]) -> Result<(Vec<u8>, i32), HglibError>;
+    fn runcommand<'a>(&mut self, args: &'a [&str], prompt: Option<Box<dyn Prompt + 'a>>) -> Result<(Vec<u8>, i32), HglibError>;
+}
+
+pub trait Prompt {
+    fn call(&mut self, size: usize) -> &[u8];
 }
 
 #[derive(Debug)]
@@ -172,7 +176,8 @@ impl Client {
 }
 
 impl Runner for Client {
-    fn runcommand(&mut self, args: &[&str]) -> Result<(Vec<u8>, i32), HglibError> {
+
+    fn runcommand<'a>(&mut self, args: &'a [&str], mut prompt: Option<Box<dyn Prompt + 'a>>) -> Result<(Vec<u8>, i32), HglibError> {
         /* Write the data on stdin:
         runcommand\n
         len(arg0\0arg1\0arg2...)
@@ -236,6 +241,18 @@ impl Runner for Client {
                         Ok((out, code))
                     };
                 }
+                b'L' => {
+                    if let Some(prompt) = prompt.as_mut() {
+                        let buf = prompt.call(len);
+                        stdin.write_u32::<BigEndian>(buf.len() as u32)?;
+                        stdin.write_all(buf)?;
+                        stdin.flush()?;
+                    } else {
+                        stdin.write_u32::<BigEndian>(0)?;
+                        stdin.flush()?;
+                        return Err(format!("Hglib error: something is expected on stdin, please implement a Prompt").into());
+                    }
+                }
                 _ => {
                     return Err(format!("Hglib error: invalid channel {}", chan[0] as char).into());
                 }
@@ -245,7 +262,7 @@ impl Runner for Client {
 }
 
 impl Runner for Basic {
-    fn runcommand(&mut self, args: &[&str]) -> Result<(Vec<u8>, i32), HglibError> {
+    fn runcommand<'a>(&mut self, args: &'a [&str], _: Option<Box<dyn Prompt + 'a>>) -> Result<(Vec<u8>, i32), HglibError> {
         let env: Vec<(OsString, OsString)> = env::vars_os().collect();
         let mut command = Vec::with_capacity(args.len() + 1);
         command.push("hg");

@@ -111,6 +111,33 @@ macro_rules! runcommand {
                 }
             }
         }
-        $client.runcommand(&tmp)
+        $client.runcommand(&tmp, None)
+    }};
+}
+
+#[macro_export]
+macro_rules! runcommand_with_prompt {
+    ( $client: expr, $name: expr, $prompt: expr, $args: expr $(, $o: expr, $x: expr )* ) => {{
+        let mut tmp = Vec::new();
+        tmp.push($name);
+        $(
+            let v = if let Some(s) = $x.mk($o, &mut tmp) {
+                s
+            } else {
+                String::new()
+            };
+            if !v.is_empty() {
+                tmp.push($o);
+                tmp.push(&v);
+            }
+        )*
+        if !$args.is_empty() {
+            for arg in $args {
+                if !arg.is_empty() {
+                    tmp.push(arg);
+                }
+            }
+        }
+        $client.runcommand(&tmp, Some(Box::new($prompt)))
     }};
 }

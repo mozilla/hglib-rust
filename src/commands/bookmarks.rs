@@ -1,4 +1,9 @@
-use crate::*;
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// You can obtain one at http://mozilla.org/MPL/2.0/.
+
+use crate::client::{Client, HglibError, Runner};
+use crate::runcommand;
 
 pub struct Arg {}
 
@@ -30,7 +35,6 @@ pub struct Bookmarks {
 impl Client {
     pub fn bookmarks(&mut self, x: Arg) -> Result<Bookmarks, HglibError> {
         let (data, _) = x.run(self)?;
-        debug_vec!(data);
         let empty = b"no bookmarks set";
         let mut bookmarks = Vec::new();
         let mut current = None;

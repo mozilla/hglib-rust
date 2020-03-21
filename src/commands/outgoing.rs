@@ -62,13 +62,13 @@ impl<'a> Arg<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Bookmark {
     pub bookmark: String,
     pub revision: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Outgoing {
     Revisions(Vec<common::Revision>),
     Bookmarks(Vec<Bookmark>),
@@ -77,20 +77,26 @@ pub enum Outgoing {
 
 impl Client {
     pub fn outgoing(&mut self, x: Arg) -> Result<Outgoing, HglibError> {
-        let (data, code) = x.run(self)?;
-        if code != 1 {
-            return Err(HglibError::from("Hglib error: outgoing didn't return 1"));
-        }
-        if data.is_empty() {
-            return Ok(Outgoing::Empty);
-        }
+        let data = match x.run(self) {
+            Ok(ret) => ret.0,
+            Err(e) => {
+                if e.code == 1 {
+                    return Ok(Outgoing::Empty);
+                } else {
+                    return Err(e);
+                }
+            }
+        };
 
         let data = common::eatlines(&data, 2);
         if x.bookmarks {
             let mut res = Vec::new();
             let mut tmp: &[u8] = &[];
             let mut odd = false;
-            for chunk in data.split(|c| *c == b' ' || *c == b'\n') {
+            for chunk in data
+                .split(|c| *c == b' ' || *c == b'\n')
+                .filter(|&c| c.len() > 0)
+            {
                 if odd {
                     res.push(Bookmark {
                         bookmark: String::from_utf8(tmp.to_vec())?,
@@ -99,6 +105,7 @@ impl Client {
                     odd = false;
                 } else {
                     tmp = chunk;
+                    odd = true;
                 }
             }
             Ok(Outgoing::Bookmarks(res))

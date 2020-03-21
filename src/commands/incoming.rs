@@ -66,13 +66,13 @@ impl<'a> Arg<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Bookmark {
     pub bookmark: String,
     pub revision: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Incoming {
     Revisions(Vec<common::Revision>),
     Bookmarks(Vec<Bookmark>),
@@ -92,7 +92,10 @@ impl Client {
                     let mut res = Vec::new();
                     let mut tmp: &[u8] = &[];
                     let mut odd = false;
-                    for chunk in data.split(|c| *c == b' ' || *c == b'\n') {
+                    for chunk in data
+                        .split(|c| *c == b' ' || *c == b'\n')
+                        .filter(|&c| c.len() > 0)
+                    {
                         if odd {
                             res.push(Bookmark {
                                 bookmark: String::from_utf8(tmp.to_vec())?,
@@ -101,6 +104,7 @@ impl Client {
                             odd = false;
                         } else {
                             tmp = chunk;
+                            odd = true;
                         }
                     }
                     Ok(Incoming::Bookmarks(res))

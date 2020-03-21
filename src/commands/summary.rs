@@ -63,8 +63,6 @@ impl Client {
         let mut summary = Summary::default();
         let mut wait_message = false;
 
-        debug_vec!(data);
-
         for line in data.split(|x| *x == b'\n').filter(|x| !x.is_empty()) {
             if wait_message {
                 let message = String::from_utf8(line[1..].to_vec()).unwrap();

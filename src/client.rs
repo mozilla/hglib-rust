@@ -234,8 +234,8 @@ impl Runner for Client {
                     } else if code != 0 {
                         Err(HglibError {
                             code,
-                            out: Some(out),
-                            msg: "".to_string(),
+                            out: Some(out.clone()),
+                            msg: String::from_utf8(out).unwrap(),
                         })
                     } else {
                         Ok((out, code))

@@ -51,3 +51,4 @@ pub mod tags;
 pub mod tip;
 pub mod update;
 pub mod version;
+pub mod summary;

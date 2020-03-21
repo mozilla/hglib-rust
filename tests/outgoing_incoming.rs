@@ -4,9 +4,17 @@
 
 extern crate hglib;
 
+use std::mem;
+
 use crate::hglib::{bookmark, client, clone, commit, hg, incoming, log, outgoing, tip};
 
 mod common;
+
+macro_rules! match_enum {
+    ($l: expr, $r: expr) => {{
+        assert_eq!(mem::discriminant(&$l), mem::discriminant(&$r))
+    }};
+}
 
 #[test]
 fn test_empty() {
@@ -16,15 +24,9 @@ fn test_empty() {
     let other = c.get_path("other");
     let mut other = client::Client::open(&other, "UTF-8", &[]).unwrap();
 
-    assert!(matches!(
-        hg!(other, incoming).unwrap(),
-        incoming::Incoming::Empty
-    ));
+    match_enum!(hg!(other, incoming).unwrap(), incoming::Incoming::Empty);
 
-    assert!(matches!(
-        hg!(other, outgoing).unwrap(),
-        outgoing::Outgoing::Empty
-    ));
+    match_enum!(hg!(other, outgoing).unwrap(), outgoing::Outgoing::Empty);
 }
 
 #[test]
@@ -40,14 +42,11 @@ fn test_basic() {
     let mut other = client::Client::open(&other, "UTF-8", &[]).unwrap();
 
     assert_eq!(hg!(c.client, log).unwrap(), hg!(other, log).unwrap());
-    assert!(matches!(
+    match_enum!(
         hg!(c.client, outgoing, path = "other").unwrap(),
         outgoing::Outgoing::Empty
-    ));
-    assert!(matches!(
-        hg!(other, incoming).unwrap(),
-        incoming::Incoming::Empty
-    ));
+    );
+    match_enum!(hg!(other, incoming).unwrap(), incoming::Incoming::Empty);
 
     c.append("a", &["a"]);
     let node = hg!(c.client, commit, message = "second").unwrap().node;

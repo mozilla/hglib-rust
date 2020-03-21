@@ -15,7 +15,11 @@ use subprocess::{Popen, PopenConfig, Redirection};
 
 pub trait Runner {
     /// Run a command
-    fn runcommand<'a>(&mut self, args: &'a [&str], prompt: Option<Box<dyn Prompt + 'a>>) -> Result<(Vec<u8>, i32), HglibError>;
+    fn runcommand<'a>(
+        &mut self,
+        args: &'a [&str],
+        prompt: Option<Box<dyn Prompt + 'a>>,
+    ) -> Result<(Vec<u8>, i32), HglibError>;
 }
 
 pub trait Prompt {
@@ -176,8 +180,11 @@ impl Client {
 }
 
 impl Runner for Client {
-
-    fn runcommand<'a>(&mut self, args: &'a [&str], mut prompt: Option<Box<dyn Prompt + 'a>>) -> Result<(Vec<u8>, i32), HglibError> {
+    fn runcommand<'a>(
+        &mut self,
+        args: &'a [&str],
+        mut prompt: Option<Box<dyn Prompt + 'a>>,
+    ) -> Result<(Vec<u8>, i32), HglibError> {
         /* Write the data on stdin:
         runcommand\n
         len(arg0\0arg1\0arg2...)
@@ -262,7 +269,11 @@ impl Runner for Client {
 }
 
 impl Runner for Basic {
-    fn runcommand<'a>(&mut self, args: &'a [&str], _: Option<Box<dyn Prompt + 'a>>) -> Result<(Vec<u8>, i32), HglibError> {
+    fn runcommand<'a>(
+        &mut self,
+        args: &'a [&str],
+        _: Option<Box<dyn Prompt + 'a>>,
+    ) -> Result<(Vec<u8>, i32), HglibError> {
         let env: Vec<(OsString, OsString)> = env::vars_os().collect();
         let mut command = Vec::with_capacity(args.len() + 1);
         command.push("hg");

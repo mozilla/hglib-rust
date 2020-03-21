@@ -62,9 +62,7 @@ impl Client {
             ))
         } else {
             let mut res = Vec::new();
-            for line in data
-                .split(|c| *c == b'\n')
-                .filter(|l| !l.is_empty()) {
+            for line in data.split(|c| *c == b'\n').filter(|l| !l.is_empty()) {
                 if line.len() >= 48 {
                     res.push(File {
                         node: String::from_utf8(unsafe { line.get_unchecked(..40).to_vec() })?,

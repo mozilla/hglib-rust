@@ -29,7 +29,10 @@ fn test_debugobsolete_failure() {
     let rev0 = hg!(c.client, commit, message = "gna1").unwrap();
     let node0 = rev0.node;
 
-    assert!(c.client.runcommand(&["debugobsolete", &node0], None).is_err());
+    assert!(c
+        .client
+        .runcommand(&["debugobsolete", &node0], None)
+        .is_err());
 }
 
 #[test]
@@ -41,7 +44,9 @@ fn test_debugobsolete_success() {
     let rev0 = hg!(c.client, commit, message = "gna1").unwrap();
     let node0 = rev0.node;
 
-    c.client.runcommand(&["debugobsolete", &node0], None).unwrap();
+    c.client
+        .runcommand(&["debugobsolete", &node0], None)
+        .unwrap();
 }
 
 #[test]
@@ -63,7 +68,9 @@ fn test_obsolete_in() {
     assert!(hg!(c.client, add, files = &["gna2"]).is_ok());
     let rev1 = hg!(c.client, commit, message = "gna2").unwrap();
     let node1 = rev1.node;
-    c.client.runcommand(&["debugobsolete", &node1], None).unwrap();
+    c.client
+        .runcommand(&["debugobsolete", &node1], None)
+        .unwrap();
     assert!(hg!(c.client, update, rev = &node0).is_ok());
 
     assert!(hg!(c.client, log, revrange = &[&node1]).is_err());

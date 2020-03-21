@@ -27,17 +27,17 @@ fn test_basic() {
 
     if cfg!(unix) {
         use std::os::unix::fs::{self, PermissionsExt};
-        
+
         c.append("b", &["b"]);
         let metadata = std::fs::metadata("b").unwrap();
         let mut permissions = metadata.permissions();
         permissions.set_mode(0o755);
         std::fs::set_permissions("b", permissions).unwrap();
-        
+
         fs::symlink("b", "c").unwrap();
 
         files.extend_from_slice(&["b", "c"]);
-        
+
         manifest.push(File {
             node: "62452855512f5b81522aa3895892760bb8da9f3f".to_string(),
             perm: "755".to_string(),
@@ -45,7 +45,7 @@ fn test_basic() {
             executable: true,
             filename: "b".to_string(),
         });
-        
+
         manifest.push(File {
             node: "62452855512f5b81522aa3895892760bb8da9f3f".to_string(),
             perm: "644".to_string(),

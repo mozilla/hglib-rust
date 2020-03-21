@@ -63,7 +63,10 @@ impl Client {
         };
 
         let iter = &mut data.iter();
-        let n = iter.skip_while(|x| **x < b'0' || **x > b'9').next().unwrap();
+        let n = iter
+            .skip_while(|x| **x < b'0' || **x > b'9')
+            .next()
+            .unwrap();
         let n = u32::from(n - b'0');
 
         let updated = iter

@@ -177,6 +177,10 @@ impl Client {
         }
         Ok(())
     }
+
+    pub fn encoding(&self) -> &str {
+        &self.encoding
+    }
 }
 
 impl Runner for Client {

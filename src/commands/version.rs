@@ -21,12 +21,60 @@ impl Arg {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Version {
     pub major: u32,
     pub minor: u32,
     pub micro: Option<u32>,
     pub build_info: Option<String>,
+}
+
+impl Ord for Version {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        for c in &[self.major.cmp(&other.major), self.minor.cmp(&other.minor)] {
+            if c != &std::cmp::Ordering::Equal {
+                return *c;
+            }
+        }
+
+        match (self.micro, other.micro) {
+            (None, None) => return std::cmp::Ordering::Equal,
+            (Some(x), None) => return x.cmp(&0),
+            (None, Some(y)) => return 0.cmp(&y),
+            (Some(x), Some(y)) => {
+                return x.cmp(&y);
+            }
+        }
+    }
+}
+
+impl PartialOrd for Version {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Version {
+    pub fn from_tuple(v: &(u32, u32, Option<u32>)) -> Version {
+        return Version {
+            major: v.0,
+            minor: v.1,
+            micro: v.2,
+            build_info: None,
+        };
+    }
+}
+
+impl PartialEq<(u32, u32, Option<u32>)> for Version {
+    fn eq(&self, other: &(u32, u32, Option<u32>)) -> bool {
+        return self == &Version::from_tuple(other);
+    }
+}
+
+impl PartialOrd<(u32, u32, Option<u32>)> for Version {
+    fn partial_cmp(&self, other: &(u32, u32, Option<u32>)) -> Option<std::cmp::Ordering> {
+        return Some(self.cmp(&Version::from_tuple(other)));
+    }
 }
 
 impl Client {

@@ -95,7 +95,7 @@ impl Client {
             let mut odd = false;
             for chunk in data
                 .split(|c| *c == b' ' || *c == b'\n')
-                .filter(|&c| c.len() > 0)
+                .filter(|&c| !c.is_empty())
             {
                 if odd {
                     res.push(Bookmark {

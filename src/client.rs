@@ -10,6 +10,7 @@ use std::env;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::{Cursor, Read, Write};
+use std::path::{Path, PathBuf};
 use std::result::Result;
 use subprocess::{Popen, PopenConfig, Redirection};
 
@@ -32,6 +33,8 @@ pub struct Client {
     server: Popen,
     /// the encoding used for this process
     encoding: String,
+    /// the canonicalized path
+    path: PathBuf,
 }
 
 pub struct Basic {}
@@ -82,27 +85,49 @@ impl Client {
     /// ```
     /// extern crate hglib;
     ///
-    /// use hglib::{hg, Client, log::self};
+    /// use hglib::{commit, hg, init, log, Basic, Client, HG};
+    /// use std::fs::File;
+    /// use std::io::Write;
     ///
     /// fn main() {
-    ///     let mut client = Client::open("/home/calixte/dev/mozilla/mozilla-central.hg", "UTF-8", &[]).unwrap();
-    ///     let res = client.log(log::Arg {
-    ///         revrange: &["tip", "-2"],
-    ///        ..Default::default()
-    ///     }).unwrap();
-    ///     eprintln!("{:?}", res);
+    ///     let path = "my_hg_repo";
+    ///     assert!(HG!(init, dest = &path).is_ok());
     ///
-    ///     let res = hg!(client, log, revrange = &["tip:-2"]).unwrap();
-    ///     eprintln!("{:?}", res);
+    ///     let mut client = Client::open(&path, "UTF-8", &[]).unwrap();
+    ///     let path = client.get_path();
+    ///
+    ///     let mut file = File::create(path.join("hello.world")).unwrap();
+    ///     file.write_all(b"Hello, world!").unwrap();
+    ///
+    ///     hg!(
+    ///         client,
+    ///         commit,
+    ///         message = "My first commit",
+    ///         addremove = true,
+    ///         user = "foo@bar.com"
+    ///     )
+    ///     .unwrap();
+    ///
+    ///     let rev = hg!(client, log).unwrap();
+    ///
+    ///     println!("{:?}", rev);
     /// }
     /// ```
-    pub fn open(path: &str, encoding: &str, configs: &[&str]) -> Result<Client, HglibError> {
+    pub fn open<P: AsRef<Path>>(
+        path: P,
+        encoding: &str,
+        configs: &[&str],
+    ) -> Result<Client, HglibError> {
         let mut env: Vec<(OsString, OsString)> = env::vars_os().collect();
         env.push((OsString::from("HGPLAIN"), OsString::from("1")));
         if !encoding.is_empty() {
             env.push((OsString::from("HGENCODING"), OsString::from(encoding)));
         }
-        let mut args = vec!["hg", "serve", "--cmdserver", "pipe", "-R", path];
+
+        let path = path.as_ref().to_path_buf().canonicalize()?;
+        let path_str = path.to_str().unwrap();
+
+        let mut args = vec!["hg", "serve", "--cmdserver", "pipe", "-R", path_str];
         for c in configs.iter() {
             args.push("--config");
             args.push(c);
@@ -114,12 +139,16 @@ impl Client {
                 stdin: Redirection::Pipe,
                 stderr: Redirection::Pipe,
                 env: Some(env),
-                cwd: Some(OsString::from(path)),
+                cwd: Some(OsString::from(path_str)),
                 ..Default::default()
             },
         )?;
         let encoding = Client::read_hello(&mut server)?;
-        let client = Client { server, encoding };
+        let client = Client {
+            server,
+            encoding,
+            path,
+        };
         Ok(client)
     }
 
@@ -128,6 +157,11 @@ impl Client {
         self.server.terminate()?;
         self.server.wait()?;
         Ok(())
+    }
+
+    /// Get the canonicalized path for this repository
+    pub fn get_path(&self) -> &PathBuf {
+        &self.path
     }
 
     fn read_hello(server: &mut Popen) -> Result<String, HglibError> {
@@ -261,7 +295,7 @@ impl Runner for Client {
                     } else {
                         stdin.write_u32::<BigEndian>(0)?;
                         stdin.flush()?;
-                        return Err(format!("Hglib error: something is expected on stdin, please implement a Prompt").into());
+                        return Err("Hglib error: something is expected on stdin, please implement a Prompt".into());
                     }
                 }
                 _ => {

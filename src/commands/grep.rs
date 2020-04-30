@@ -122,7 +122,7 @@ impl Client {
             field_types.push(FieldType::Matched);
         }
 
-        return Ok(field_types);
+        Ok(field_types)
     }
 
     pub fn grep(&mut self, x: Arg) -> Result<Vec<GrepRes>, HglibError> {

@@ -63,28 +63,25 @@ impl Client {
         };
 
         let iter = &mut data.iter();
-        let n = iter
-            .skip_while(|x| **x < b'0' || **x > b'9')
-            .next()
-            .unwrap();
+        let n = iter.find(|x| b'0' <= **x && **x <= b'9').unwrap();
         let n = u32::from(n - b'0');
 
         let updated = iter
             .take_while(|x| **x != b' ')
             .fold(n, |r, x| r * 10 + u32::from(*x - b'0'));
-        iter.skip_while(|x| **x != b',').next();
+        iter.find(|x| **x == b',').unwrap();
         iter.next();
 
         let merged = iter
             .take_while(|x| **x != b' ')
             .fold(0, |r, x| r * 10 + u32::from(*x - b'0'));
-        iter.skip_while(|x| **x != b',').next();
+        iter.find(|x| **x == b',').unwrap();
         iter.next();
 
         let removed = iter
             .take_while(|x| **x != b' ')
             .fold(0, |r, x| r * 10 + u32::from(*x - b'0'));
-        iter.skip_while(|x| **x != b',').next();
+        iter.find(|x| **x == b',').unwrap();
         iter.next();
 
         let unresolved = iter

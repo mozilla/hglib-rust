@@ -92,15 +92,10 @@ impl Client {
 
                     let node = iter
                         .take_while(|x| **x != b' ')
-                        .fold(String::new(), |mut r, x| {
-                            r.push(*x as char);
-                            r
-                        });
+                        .map(|x| *x as char)
+                        .collect::<String>();
 
-                    let mut tags = iter.fold(String::new(), |mut r, x| {
-                        r.push(*x as char);
-                        r
-                    });
+                    let mut tags = iter.map(|x| *x as char).collect::<String>();
                     if !tags.is_empty() {
                         let empty = " (empty repository)";
                         if tags.ends_with(empty) {
@@ -149,8 +144,7 @@ impl Client {
                                 .take_while(|x| **x != b' ')
                                 .fold(0, |r, x| r * 10 + u64::from(*x - b'0'));
 
-                            let typ: Vec<_> =
-                                iter.take_while(|x| **x != b',').map(|x| *x).collect();
+                            let typ: Vec<_> = iter.take_while(|x| **x != b',').copied().collect();
                             match typ.as_slice() {
                                 b"outgoing" => {
                                     rem.outgoing = n;

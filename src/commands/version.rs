@@ -38,12 +38,10 @@ impl Ord for Version {
         }
 
         match (self.micro, other.micro) {
-            (None, None) => return std::cmp::Ordering::Equal,
-            (Some(x), None) => return x.cmp(&0),
-            (None, Some(y)) => return 0.cmp(&y),
-            (Some(x), Some(y)) => {
-                return x.cmp(&y);
-            }
+            (None, None) => std::cmp::Ordering::Equal,
+            (Some(x), None) => x.cmp(&0),
+            (None, Some(y)) => 0.cmp(&y),
+            (Some(x), Some(y)) => x.cmp(&y),
         }
     }
 }
@@ -56,24 +54,24 @@ impl PartialOrd for Version {
 
 impl Version {
     pub fn from_tuple(v: &(u32, u32, Option<u32>)) -> Version {
-        return Version {
+        Version {
             major: v.0,
             minor: v.1,
             micro: v.2,
             build_info: None,
-        };
+        }
     }
 }
 
 impl PartialEq<(u32, u32, Option<u32>)> for Version {
     fn eq(&self, other: &(u32, u32, Option<u32>)) -> bool {
-        return self == &Version::from_tuple(other);
+        self == &Version::from_tuple(other)
     }
 }
 
 impl PartialOrd<(u32, u32, Option<u32>)> for Version {
     fn partial_cmp(&self, other: &(u32, u32, Option<u32>)) -> Option<std::cmp::Ordering> {
-        return Some(self.cmp(&Version::from_tuple(other)));
+        Some(self.cmp(&Version::from_tuple(other)))
     }
 }
 

@@ -247,7 +247,7 @@ impl Runner for Client {
         let stdout = self.server.stdout.as_mut().unwrap();
         let mut out = Vec::<u8>::with_capacity(4096);
         let mut chan: Vec<u8> = vec![0; 1];
-        let mut returned_err: Option<String> = None;
+        //let mut returned_err: Option<String> = None;
         loop {
             let n = stdout.read(&mut chan)?;
             if n != 1 {
@@ -259,8 +259,8 @@ impl Runner for Client {
                     // We've an error
                     let mut err = Vec::<u8>::with_capacity(512);
                     Client::read_data(len, &mut err, stdout)?;
-                    let err = String::from_utf8(err)?;
-                    returned_err = Some(err);
+                    //let err = String::from_utf8(err)?;
+                    //returned_err = Some(err);
                 }
                 b'o' => {
                     Client::read_data(len, &mut out, stdout)?;
@@ -270,13 +270,15 @@ impl Runner for Client {
                     stdout.read_exact(&mut code)?;
                     let mut cur = Cursor::new(&code);
                     let code = cur.read_i32::<BigEndian>()?;
-                    return if let Some(msg) = returned_err {
+                    // TODO: error may have been set and code == 0 when we've a warning
+                    // so handle that with an error handler
+                    return /* if let Some(msg) = returned_err {
                         Err(HglibError {
                             code,
                             out: Some(out),
                             msg,
                         })
-                    } else if code != 0 {
+                    } else */ if code != 0 {
                         Err(HglibError {
                             code,
                             out: Some(out.clone()),

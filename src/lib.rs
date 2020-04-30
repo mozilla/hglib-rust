@@ -5,8 +5,8 @@
 pub mod client;
 pub use self::client::*;
 
-pub(crate) mod builder;
-pub(crate) use self::builder::*;
+pub mod builder;
+pub use self::builder::*;
 
 pub(crate) mod commands;
 pub use self::commands::*;

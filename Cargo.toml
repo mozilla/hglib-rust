@@ -5,6 +5,7 @@ edition = "2018"
 authors = ["calixteman <cdenizet@mozilla.com>"]
 repository = "https://github.com/mozilla/hglib-rust"
 documentation = "https://docs.rs/hglib-rs/"
+readme = "README.md"
 keywords = ["mercurial"]
 description = "Rust implementation of python-hglib"
 license = "MPL-2.0"
